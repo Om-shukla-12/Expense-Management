@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS expenses (
   date TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'pending',
   created_at TEXT NOT NULL,
+  flow_id TEXT,
   FOREIGN KEY(company_id) REFERENCES companies(id),
   FOREIGN KEY(user_id) REFERENCES users(id)
 );
@@ -70,6 +71,7 @@ CREATE TABLE IF NOT EXISTS approval_flows (
   id TEXT PRIMARY KEY,
   company_id TEXT NOT NULL,
   approvers_meta TEXT,
+  name TEXT,
   FOREIGN KEY(company_id) REFERENCES companies(id)
 );
 

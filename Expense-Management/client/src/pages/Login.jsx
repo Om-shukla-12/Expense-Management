@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import '../component/pages/login.css'
 import api from '../api'
 import { setAuth } from '../auth'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 export default function Login(){
   const [email,setEmail]=useState('')
@@ -24,6 +24,7 @@ export default function Login(){
         <input placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)} required />
         <button>Login</button>
       </form>
+      <div style={{marginTop:12}} className="muted small">Don't have an account? <Link to="/signup">Signup</Link></div>
     </>
   )
 }

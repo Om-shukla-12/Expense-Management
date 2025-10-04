@@ -1,15 +1,36 @@
 const express = require('express');
 const db = require('../lib/db');
 const { requireAuth, uuidv4 } = require('../lib/auth');
+const fetchFn = globalThis.fetch && globalThis.fetch.bind(globalThis);
 
 const router = express.Router();
 
 // list pending steps for current approver
-router.get('/pending', requireAuth, (req, res) => {
+router.get('/pending', requireAuth, async (req, res) => {
   const rows = db.prepare(`SELECT s.*, e.user_id, e.amount, e.currency, e.status as expense_status
     FROM approval_steps s JOIN expenses e ON s.expense_id = e.id
     WHERE s.approver_id = ? AND s.status = 'pending' ORDER BY s.step_index`).all(req.user.id);
-  res.json(rows);
+
+  const company = db.prepare('SELECT currency FROM companies WHERE id = ?').get(req.user.company_id);
+  const companyCurrency = company.currency;
+
+  const promises = rows.map(async (row) => {
+    if (row.currency === companyCurrency) {
+        return { ...row, convertedAmount: row.amount, companyCurrency };
+    }
+    try {
+        const response = await (fetchFn || fetch)(`https://api.exchangerate-api.com/v4/latest/${row.currency}`);
+        const data = await response.json();
+        const rate = data.rates[companyCurrency];
+        const convertedAmount = row.amount * rate;
+        return { ...row, convertedAmount, companyCurrency };
+    } catch (error) {
+        console.error('Failed to fetch exchange rate', error);
+        return { ...row, convertedAmount: null, companyCurrency, conversionError: 'Failed to fetch exchange rate' };
+    }
+  });
+  const results = await Promise.all(promises);
+  res.json(results);
 });
 
 // approve/reject a step
@@ -35,7 +56,8 @@ router.post('/:stepId/decide', requireAuth, (req, res) => {
 
   // approved: find next pending step
   // approved: evaluate conditional rules if a flow is attached
-  const flowRow = db.prepare('SELECT af.id, af.approvers_meta FROM approval_flows af JOIN approvers a ON af.id = a.id JOIN expenses e ON e.company_id = af.company_id WHERE e.id = ?').get(expense.id);
+  // prefer explicit flow_id stored on expense
+  const flowRow = expense.flow_id ? db.prepare('SELECT id, approvers_meta FROM approval_flows WHERE id = ?').get(expense.flow_id) : null;
 
   // helper to finalize approval when no more steps
   function finalizeApproved() {
@@ -49,8 +71,10 @@ router.post('/:stepId/decide', requireAuth, (req, res) => {
     try { meta = JSON.parse(flowRow.approvers_meta); } catch (e) { meta = null; }
     // compute all steps and their statuses
     const allSteps = db.prepare('SELECT * FROM approval_steps WHERE expense_id = ? ORDER BY step_index').all(expense.id);
-    const total = allSteps.length;
-    const approvedCount = allSteps.filter(s => s.status === 'approved').length + 1; // include current approved
+  const total = allSteps.length;
+  // compute how many steps are approved (including the one we just updated)
+  const approvedCount = allSteps.filter(s => s.status === 'approved').length;
+  // note: the current step was already updated to 'approved' above
 
     // specific approver rule check
     if (meta && meta.rules && (meta.rules.type === 'specific' || meta.rules.type === 'hybrid')) {

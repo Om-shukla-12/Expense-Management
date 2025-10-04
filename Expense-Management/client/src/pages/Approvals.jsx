@@ -21,7 +21,10 @@ export default function Approvals(){
       <ul className="list">
         {steps.map(s=> (
           <li key={s.id} className="item">
-            <div>{s.expense_id} — {s.amount} {s.currency}</div>
+            <div>
+              {s.expense_id} — {s.amount} {s.currency}
+              {s.convertedAmount && ` (${s.convertedAmount.toFixed(2)} ${s.companyCurrency})`}
+            </div>
             <div>
               <button onClick={()=>decide(s.id,'approve')}>Approve</button>
               <button onClick={()=>decide(s.id,'reject')}>Reject</button>

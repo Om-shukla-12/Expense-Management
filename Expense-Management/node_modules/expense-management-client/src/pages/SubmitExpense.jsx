@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import api from '../api'
 import '../component/pages/submitexpense.css'
 
@@ -7,6 +7,8 @@ export default function SubmitExpense(){
   const [flows,setFlows] = useState([])
   const [file,setFile] = useState(null)
   const [preview,setPreview] = useState(null)
+  const [ocrLoading, setOcrLoading] = useState(false)
+  const ocrFileInput = useRef(null)
 
   useEffect(()=>{fetchFlows()},[])
   async function fetchFlows(){
@@ -42,10 +44,43 @@ export default function SubmitExpense(){
     setPreview(url)
   }
 
+  async function onOcrFile(e) {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+
+    setOcrLoading(true);
+    const fd = new FormData();
+    fd.append('receipt', f);
+
+    try {
+      const res = await api.post('/ocr', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const data = res.data;
+      setForm(prev => ({
+        ...prev,
+        amount: data.amount || prev.amount,
+        date: data.date ? new Date(data.date).toISOString().split('T')[0] : prev.date,
+        description: data.description || prev.description,
+      }));
+    } catch (err) {
+      console.error('OCR failed', err);
+      alert('OCR failed');
+    } finally {
+      setOcrLoading(false);
+    }
+  }
+
   return (
     <>
       <h2>Submit Expense</h2>
       <form onSubmit={submit} className="form">
+        <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 8 }}>
+          <button type="button" onClick={() => ocrFileInput.current && ocrFileInput.current.click()}>
+            {ocrLoading ? 'Scanning...' : 'Scan Receipt'}
+          </button>
+          <input type="file" accept="image/*" onChange={onOcrFile} style={{ display: 'none' }} ref={ocrFileInput} />
+        </div>
         <input placeholder="Title" value={form.title} onChange={e=>setForm({...form, title:e.target.value})} />
         <input placeholder="Amount" value={form.amount} onChange={e=>setForm({...form, amount:e.target.value})} required />
         <input placeholder="Category" value={form.category} onChange={e=>setForm({...form, category:e.target.value})} />

@@ -10,18 +10,17 @@ router.post('/', requireAuth, (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'only admin' });
   const { name, steps = [], rules = null } = req.body;
   const id = uuidv4();
-  db.prepare('INSERT INTO approvers (id, company_id, name, role) VALUES (?, ?, ?, ?)').run(id, req.user.company_id, name || '', 'flow');
+  // create approval flow record (store name + rules)
+  db.prepare('INSERT INTO approval_flows (id, company_id, approvers_meta, name) VALUES (?, ?, ?, ?)').run(id, req.user.company_id, JSON.stringify({ rules }), name || null);
 
-  // store steps in approval_steps template table? Simpler: reuse approvers table and a flow_steps table
-  db.exec(`CREATE TABLE IF NOT EXISTS flow_steps (id TEXT PRIMARY KEY, flow_id TEXT, step_index INTEGER, approver_id TEXT, FOREIGN KEY(flow_id) REFERENCES approvers(id))`);
+  // ensure flow_steps table exists and references approval_flows
+  db.exec(`CREATE TABLE IF NOT EXISTS flow_steps (id TEXT PRIMARY KEY, flow_id TEXT, step_index INTEGER, approver_id TEXT, FOREIGN KEY(flow_id) REFERENCES approval_flows(id))`);
 
   for (let i = 0; i < steps.length; i++) {
     const s = steps[i];
     const sid = uuidv4();
     db.prepare('INSERT INTO flow_steps (id, flow_id, step_index, approver_id) VALUES (?, ?, ?, ?)').run(sid, id, s.sequence || (i + 1), s.approver_id || null);
   }
-
-  db.prepare('INSERT INTO approval_flows (id, company_id, approvers_meta) VALUES (?, ?, ?)').run(id, req.user.company_id, JSON.stringify({ rules }));
 
   res.status(201).json({ id, name });
 });

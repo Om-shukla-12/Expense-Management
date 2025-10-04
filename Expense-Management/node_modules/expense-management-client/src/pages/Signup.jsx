@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import '../component/pages/signup.css'
 import api from '../api'
 import { setAuth } from '../auth'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 export default function Signup(){
   const [companyName,setCompanyName]=useState('')
@@ -28,6 +28,7 @@ export default function Signup(){
         <input placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)} required />
         <button>Signup</button>
       </form>
+      <div style={{marginTop:12}} className="muted small">Already have an account? <Link to="/login">Login</Link></div>
     </>
   )
 }

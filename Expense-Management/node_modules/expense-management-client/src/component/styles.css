@@ -55,6 +55,7 @@ li{background:rgba(255,255,255,0.04);padding:12px;border-radius:10px;border:1px 
 
 .muted{color:var(--muted)}
 .small{font-size:0.9rem}
+.hidden{display:none}
 
 /* modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:flex;align-items:center;justify-content:center;z-index:60}

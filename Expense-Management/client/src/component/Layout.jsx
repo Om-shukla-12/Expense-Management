@@ -14,6 +14,7 @@ export default function Layout({ children }){
             <Link to="/approvals" style={{color:'var(--muted)'}}>Approvals</Link>
             <Link to="/flows" style={{color:'var(--muted)'}}>Flows</Link>
             <Link to="/users" style={{color:'var(--muted)'}}>Users</Link>
+            <Link to="/debug" style={{color:'var(--muted)'}}>Debug</Link>
           </nav>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:12}}>
