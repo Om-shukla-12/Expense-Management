@@ -4,7 +4,11 @@ const Database = require('better-sqlite3');
 
 const dataDir = path.join(__dirname, '..', 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-const dbPath = path.join(dataDir, 'app.sqlite');
+// prefer a migrated copy if it's present (created by migration helper) to avoid locked-file replace issues
+const defaultDbPath = path.join(dataDir, 'app.sqlite');
+const copyDbPath = path.join(dataDir, 'app.sqlite.copy');
+const dbPath = process.env.DB_PATH || (fs.existsSync(copyDbPath) ? copyDbPath : defaultDbPath);
+if (dbPath !== defaultDbPath) console.log('Using DB path:', dbPath);
 const db = new Database(dbPath);
 
 // Initialize schema
@@ -94,5 +98,28 @@ CREATE TABLE IF NOT EXISTS receipts (
 );
 
 `);
+
+// lightweight migrations: add columns if DB was created before schema changes
+(function runMigrations() {
+  try {
+    const afCols = db.prepare("PRAGMA table_info('approval_flows')").all();
+    const afHasName = afCols.some(c => c.name === 'name');
+    if (!afHasName) {
+      try { db.prepare('ALTER TABLE approval_flows ADD COLUMN name TEXT').run(); console.log('Migrated: added approval_flows.name'); } catch (e) { console.warn('Could not add approval_flows.name:', e.message); }
+    }
+
+    const expCols = db.prepare("PRAGMA table_info('expenses')").all();
+    const expHasFlow = expCols.some(c => c.name === 'flow_id');
+    if (!expHasFlow) {
+      try { db.prepare('ALTER TABLE expenses ADD COLUMN flow_id TEXT').run(); console.log('Migrated: added expenses.flow_id'); } catch (e) { console.warn('Could not add expenses.flow_id:', e.message); }
+    }
+    const expHasTitle = expCols.some(c => c.name === 'title');
+    if (!expHasTitle) {
+      try { db.prepare('ALTER TABLE expenses ADD COLUMN title TEXT').run(); console.log('Migrated: added expenses.title'); } catch (e) { console.warn('Could not add expenses.title:', e.message); }
+    }
+  } catch (e) {
+    console.warn('Migration check failed:', e && e.message ? e.message : String(e));
+  }
+})()
 
 module.exports = db;

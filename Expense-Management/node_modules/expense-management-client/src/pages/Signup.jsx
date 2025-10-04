@@ -10,12 +10,19 @@ export default function Signup(){
   const [password,setPassword]=useState('')
   const [country,setCountry]=useState('')
   const nav = useNavigate()
+  const [error,setError]=useState(null)
 
   async function submit(e){
     e.preventDefault()
-    const res = await api.post('/auth/signup', { companyName, email, password, country })
-    setAuth(res.data)
-    nav('/')
+    try {
+      setError(null)
+      const res = await api.post('/auth/signup', { companyName, email, password, country })
+      setAuth(res.data)
+      nav('/')
+    } catch (err) {
+      console.error('Signup failed', err)
+      setError(err.response && err.response.data && err.response.data.error ? err.response.data.error : err.message)
+    }
   }
 
   return (
@@ -28,6 +35,7 @@ export default function Signup(){
         <input placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)} required />
         <button>Signup</button>
       </form>
+      {error && <div className="error" style={{marginTop:12}}>{error}</div>}
       <div style={{marginTop:12}} className="muted small">Already have an account? <Link to="/login">Login</Link></div>
     </>
   )

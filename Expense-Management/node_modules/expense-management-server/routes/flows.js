@@ -30,10 +30,7 @@ router.post('/', requireAuth, (req, res) => {
 router.get('/', requireAuth, (req, res) => {
   try {
     // approval flows are stored in approval_flows; some code stores names in approvers with same id
-    const rows = db.prepare(`SELECT af.id, IFNULL(ap.name, af.id) as name, af.approvers_meta
-      FROM approval_flows af
-      LEFT JOIN approvers ap ON ap.id = af.id
-      WHERE af.company_id = ?`).all(req.user.company_id);
+    const rows = db.prepare('SELECT id, COALESCE(name, id) as name, approvers_meta FROM approval_flows WHERE company_id = ?').all(req.user.company_id);
     res.json(rows);
   } catch (e) {
     console.error('GET /api/flows error:', e && e.stack ? e.stack : e);

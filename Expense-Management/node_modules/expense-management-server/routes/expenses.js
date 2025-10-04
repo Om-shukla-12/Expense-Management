@@ -27,8 +27,8 @@ router.post('/', requireAuth, (req, res) => {
     if (!amount || !date) return res.status(400).json({ error: 'amount and date required' });
     const id = uuidv4();
     const created_at = new Date().toISOString();
-    db.prepare('INSERT INTO expenses (id, company_id, user_id, amount, currency, category, description, date, status, created_at, flow_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-      .run(id, req.user.company_id, req.user.id, amount, currency, category, description, date, 'pending', created_at, flow_id);
+    db.prepare('INSERT INTO expenses (id, company_id, user_id, title, amount, currency, category, description, date, status, created_at, flow_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .run(id, req.user.company_id, req.user.id, req.body.title || null, amount, currency, category, description, date, 'pending', created_at, flow_id);
 
   // create approval steps based on provided flow_id or default manager approver
   if (flow_id) {

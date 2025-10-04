@@ -19,21 +19,28 @@ export default function SubmitExpense(){
   async function submit(e){
     e.preventDefault()
     const payload = { ...form, amount: Number(form.amount) }
-    const res = await api.post('/expenses', payload)
-    const expense = res.data
-    // upload receipt if present
-    if (file) {
-      const fd = new FormData()
-      fd.append('receipt', file)
-      try{
-        await api.post(`/receipts/${expense.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
-      }catch(err){
-        console.error('upload failed', err)
+    try {
+      const res = await api.post('/expenses', payload)
+      const expense = res.data
+
+      // upload receipt if present
+      if (file) {
+        const fd = new FormData()
+        fd.append('receipt', file)
+        try{
+          await api.post(`/receipts/${expense.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+        }catch(err){
+          console.error('upload failed', err)
+        }
       }
+      alert('submitted')
+      setForm({ title:'', amount:'', currency:'USD', category:'', description:'', date:'', flow_id: '' })
+      setFile(null); setPreview(null)
+    } catch (err) {
+      console.error('Submit expense failed', err)
+      const msg = err.response && err.response.data && err.response.data.error ? err.response.data.error : err.message
+      alert('Submit failed: ' + msg)
     }
-    alert('submitted')
-    setForm({ title:'', amount:'', currency:'USD', category:'', description:'', date:'', flow_id: '' })
-    setFile(null); setPreview(null)
   }
 
   function onFile(e){

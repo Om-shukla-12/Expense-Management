@@ -21,11 +21,26 @@ router.post('/', requireAuth, (req, res) => {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'only admin' });
     const { email, name, role = 'employee', manager_id, password } = req.body;
     if (!email) return res.status(400).json({ error: 'email required' });
+
+    // duplicate email check
+    const exists = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+    if (exists) return res.status(409).json({ error: 'email already exists' });
+
     const id = uuidv4();
-    const pw = password ? hashPassword(password) : null;
+    // if password not provided, generate a random one and return it to the admin
+    const crypto = require('crypto');
+    let plainPassword = password;
+    if (!plainPassword) {
+      plainPassword = crypto.randomBytes(6).toString('hex'); // 12-char hex
+    }
+    const pw = plainPassword ? hashPassword(plainPassword) : null;
+
     db.prepare('INSERT INTO users (id, company_id, email, name, role, manager_id, password) VALUES (?, ?, ?, ?, ?, ?, ?)')
       .run(id, req.user.company_id, email, name || '', role, manager_id || null, pw);
-    res.status(201).json({ id, email, name, role, manager_id });
+
+    const resp = { id, email, name, role, manager_id };
+    if (!password) resp.generatedPassword = plainPassword;
+    res.status(201).json(resp);
   } catch (e) {
     console.error('POST /api/users error:', e && e.stack ? e.stack : e);
     res.status(500).json({ error: e && e.message ? e.message : String(e) });
