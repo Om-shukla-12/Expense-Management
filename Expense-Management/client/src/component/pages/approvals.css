@@ -1,0 +1,8 @@
+/* Approvals page styles */
+.approval-list{display:flex;flex-direction:column;gap:12px}
+.approval-card{display:flex;justify-content:space-between;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
+.approval-meta{color:var(--muted);font-size:0.95rem}
+.approval-actions{display:flex;gap:8px;align-items:center}
+.approval-actions .btn{padding:8px 12px;border-radius:10px}
+.decision-reject{background:transparent;color:var(--danger);border:1px solid rgba(239,68,68,0.08)}
+.comment{margin-top:8px}

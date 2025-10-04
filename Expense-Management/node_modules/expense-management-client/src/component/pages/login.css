@@ -1,0 +1,9 @@
+/* Login page styles built on shared design tokens */
+.login-page{display:flex;justify-content:center;margin-top:48px}
+.login-card{width:420px;background:rgba(255,255,255,0.04);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 8px 20px rgba(0,0,0,0.4)}
+.login-card .brand{font-weight:700;color:var(--text);font-size:1.3rem}
+.login-card .form{margin-top:12px;display:flex;flex-direction:column;gap:12px}
+.login-card input[type=text],.login-card input[type=password]{padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.12);background:rgba(255,255,255,0.92);color:#000}
+.login-card .actions{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.login-card .actions .btn{padding:10px 14px;border-radius:10px}
+.hint{color:var(--muted);font-size:0.9rem}

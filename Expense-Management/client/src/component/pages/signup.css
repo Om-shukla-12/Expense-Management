@@ -1,0 +1,7 @@
+/* Signup page styles */
+.signup-wrap{display:flex;justify-content:center;margin-top:36px}
+.signup-card{width:520px;background:rgba(255,255,255,0.04);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.06)}
+.signup-card .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.signup-card .form-row{grid-column:1 / -1;display:flex;gap:12px}
+.signup-card input, .signup-card select{padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.12);background:rgba(255,255,255,0.92);color:#000}
+.signup-card .submit{grid-column:1 / -1;display:flex;justify-content:flex-end}

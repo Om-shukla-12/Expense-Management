@@ -1,0 +1,9 @@
+/* Submit expense styles */
+.submit-wrap{display:flex;justify-content:center;margin-top:28px}
+.submit-card{width:720px;background:rgba(255,255,255,0.04);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.06)}
+.submit-card .form{display:grid;grid-template-columns:1fr 320px;gap:14px}
+.submit-card .form .left{display:flex;flex-direction:column;gap:12px}
+.submit-card input, .submit-card textarea, .submit-card select{padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.12);background:rgba(255,255,255,0.92);color:#000}
+.receipt-preview{background:rgba(255,255,255,0.02);border-radius:8px;padding:10px;border:1px dashed rgba(255,255,255,0.06)}
+.submit-actions{display:flex;justify-content:flex-end;margin-top:12px}
+.submit-actions .btn{padding:10px 16px}

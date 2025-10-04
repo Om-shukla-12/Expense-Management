@@ -1,0 +1,5 @@
+/* Admin users styles */
+.users-table{width:100%;border-collapse:collapse}
+.users-table th{color:var(--muted);text-align:left;padding:8px}
+.users-table td{padding:12px;border-top:1px solid rgba(255,255,255,0.03)}
+.user-actions .btn{margin-right:8px}
